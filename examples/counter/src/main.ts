@@ -1,42 +1,69 @@
+import { createBrowserInspector } from '@statelyai/inspect';
 import './style.css';
 
-import { counterMachine } from './counterMachine';
 import { createActor } from 'xstate';
+import { NOTEBOOK_SHORTCUTS_LOOKUP } from './constant';
+import counterMachine from './counterMachine';
+import { getKeyHashFromEvent } from './util';
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <div class="card">
-      <output id="output"></output>
-      <button id="increment" type="button">Increment</button>
-      <button id="decrement" type="button">Decrement</button>
-    </div>
-  </div>
-`;
+const { inspect } = createBrowserInspector();
+const actor = createActor(counterMachine, { inspect });
+actor.start();
 
-const incrementButton =
-  document.querySelector<HTMLButtonElement>('#increment')!;
-const decrementButton =
-  document.querySelector<HTMLButtonElement>('#decrement')!;
-const outputEl = document.querySelector<HTMLDivElement>('#output')!;
-
-function render(count: number): void {
-  outputEl.innerHTML = `Count is ${count}`;
+function handleKeyDown(event: KeyboardEvent) {
+  const eventKeyHash = getKeyHashFromEvent(event);
+  if (NOTEBOOK_SHORTCUTS_LOOKUP[eventKeyHash]) {
+    const { eventName } = NOTEBOOK_SHORTCUTS_LOOKUP[eventKeyHash];
+    console.log(`attempt: sending ${eventName}`);
+    event.preventDefault();
+    actor.send({ type: eventName });
+  }
 }
 
-const counterActor = createActor(counterMachine);
+document.body.addEventListener('keydown', handleKeyDown);
 
-counterActor.subscribe((state) => {
-  render(state.context.count);
+const outputEl = document.querySelector<HTMLDivElement>('#output')!;
+
+function render(html: string): void {
+  outputEl.innerHTML = html;
+}
+
+actor.subscribe((state) => {
+  const {
+    context: { selectedIndex, focusIndex, runIndex, cells },
+    value
+  } = state;
+  render(`
+    <div>
+      <div class="card">
+        <div>
+          ${JSON.stringify(
+            {
+              selectedIndex,
+              focusIndex,
+              runIndex,
+              numberOfCells: cells.length
+            },
+            null,
+            2
+          )}
+        </div>
+        <ul tabindex="0">
+          ${cells
+            .map(
+              (cell, index) => `
+            <li tabindex="0" class="${
+              index === selectedIndex ? 'selected' : ''
+            } ${index === focusIndex ? 'focused' : ''} ${
+              index === runIndex ? 'ran' : ''
+            }">
+              ${cell.content}
+            </li>
+          `
+            )
+            .join('')}
+        </ul>
+      </div>
+    </div>
+  `);
 });
-
-counterActor.start();
-
-incrementButton?.addEventListener('click', () => {
-  counterActor.send({ type: 'increment' });
-});
-
-decrementButton?.addEventListener('click', () => {
-  counterActor.send({ type: 'decrement' });
-});
-
-// setupCounter(document.querySelector<HTMLButtonElement>('#counter')!);

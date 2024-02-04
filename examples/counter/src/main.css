@@ -1,0 +1,36 @@
+* {
+  box-sizing: border-box;
+}
+li.selected, li.selected:hover {
+  outline: 2px solid #ccc;
+}
+li.focused.focused {
+  outline: 4px solid cyan
+}
+li.ran {
+  outline: 1px dotted cyan
+}
+
+h2 {
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+ul {
+  position: relative;
+}
+ul li {
+  position: relative;
+  width: 100%;
+  left: 0;
+  color: #fce4ec;
+  list-style: none;
+  padding: 1em;
+  transition: .3s;
+  cursor: pointer;
+}
+
+ul li:hover {
+  outline: 2px solid #333;
+}
