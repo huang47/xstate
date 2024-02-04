@@ -73,7 +73,7 @@ export const NOTEBOOK_SHORTCUTS = {
   },
   convertToCode: {
     keys: [{ key: 'y' }],
-    label: 'Convert to Python/SQL cell'
+    label: 'Convert to Python or SQL cell'
   },
   showKeyboardShortcuts: {
     keys: [{ shift: true, key: '?' }],
